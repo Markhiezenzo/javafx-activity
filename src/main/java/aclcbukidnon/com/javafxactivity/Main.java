@@ -21,7 +21,7 @@ public class Main extends Application {
 
         stage.setMinWidth(800);
         stage.setMinHeight(600);
-        stage.setTitle("Activity");
+        stage.setTitle("Basic JavaFX Activity");
         stage.setScene(scene);
         stage.show();
     }

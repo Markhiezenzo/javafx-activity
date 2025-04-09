@@ -8,21 +8,31 @@ import javafx.scene.media.MediaPlayer;
 
 public class CalculatorController {
     @FXML private Label displayLabel;
-    @FXML private Button button7, button8, button9, button4, button5, button6, button1, button2, button3, button0, buttonDot;
-    @FXML private Button buttonPlus, buttonMinus, buttonMultiply, buttonDivide, buttonClear, buttonEqual, buttonBackspace;
+    @FXML private Button button7, button8, button9, button4, button5, button6;
+    @FXML private Button button1, button2, button3, button0, buttonDot;
+    @FXML private Button buttonPlus, buttonMinus, buttonMultiply, buttonDivide;
+    @FXML private Button buttonClear, buttonEqual, buttonBackspace;
+    @FXML private Button buttonSpeaker;
 
     private String currentInput = "";
-
     private MediaPlayer clickSoundPlayer;
+    private MediaPlayer equalSoundPlayer;
+    private boolean isSoundOn = true;
 
     @FXML
     public void initialize() {
-        // Load the click sound from resources
-        Media clickSound = new Media(getClass().getResource("/aclcbukidnon/com/javafxactivity/click_sound.mp3").toExternalForm());
-
+        // Load normal click sound
+        Media clickSound = new Media(getClass().getResource("/aclcbukidnon/com/javafxactivity/sound/click_sound.mp3").toExternalForm());
         clickSoundPlayer = new MediaPlayer(clickSound);
 
-        // Set actions for buttons with sound on click
+        // Load equal button sound
+        Media equalSound = new Media(getClass().getResource("/aclcbukidnon/com/javafxactivity/sound/click_sound.mp3").toExternalForm());
+        equalSoundPlayer = new MediaPlayer(equalSound);
+
+        // Handle speaker toggle button
+        buttonSpeaker.setOnAction(event -> toggleSound());
+
+        // Set actions for buttons with sound
         button7.setOnAction(event -> playClickSoundAndAppendNumber("7"));
         button8.setOnAction(event -> playClickSoundAndAppendNumber("8"));
         button9.setOnAction(event -> playClickSoundAndAppendNumber("9"));
@@ -40,8 +50,27 @@ public class CalculatorController {
         buttonMultiply.setOnAction(event -> playClickSoundAndAppendOperator("*"));
         buttonDivide.setOnAction(event -> playClickSoundAndAppendOperator("/"));
         buttonClear.setOnAction(event -> playClickSoundAndClearDisplay());
-        buttonEqual.setOnAction(event -> playClickSoundAndCalculateResult());
+        buttonEqual.setOnAction(event -> playEqualSoundAndCalculateResult());
         buttonBackspace.setOnAction(event -> playClickSoundAndBackspace());
+    }
+
+    private void toggleSound() {
+        isSoundOn = !isSoundOn;
+        buttonSpeaker.setText(isSoundOn ? "🔊" : "🔇");
+    }
+
+    private void playClickSound() {
+        if (isSoundOn) {
+            clickSoundPlayer.stop();
+            clickSoundPlayer.play();
+        }
+    }
+
+    private void playEqualSound() {
+        if (isSoundOn) {
+            equalSoundPlayer.stop();
+            equalSoundPlayer.play();
+        }
     }
 
     private void playClickSoundAndAppendNumber(String number) {
@@ -64,8 +93,8 @@ public class CalculatorController {
         clearDisplay();
     }
 
-    private void playClickSoundAndCalculateResult() {
-        playClickSound();
+    private void playEqualSoundAndCalculateResult() {
+        playEqualSound();
         calculateResult();
     }
 
@@ -74,18 +103,13 @@ public class CalculatorController {
         backspace();
     }
 
-    private void playClickSound() {
-        clickSoundPlayer.stop();
-        clickSoundPlayer.play();
-    }
-
     private void appendNumber(String number) {
         currentInput += number;
         updateDisplay();
     }
 
     private void appendDot() {
-        if (!currentInput.contains(".")) {
+        if (!currentInput.endsWith(".")) {
             currentInput += ".";
         }
         updateDisplay();
@@ -131,20 +155,13 @@ public class CalculatorController {
         String operator = tokens[1];
 
         switch (operator) {
-            case "+":
-                return num1 + num2;
-            case "-":
-                return num1 - num2;
-            case "*":
-                return num1 * num2;
+            case "+": return num1 + num2;
+            case "-": return num1 - num2;
+            case "*": return num1 * num2;
             case "/":
-                if (num2 != 0) {
-                    return num1 / num2;
-                } else {
-                    throw new ArithmeticException("Cannot divide by zero");
-                }
-            default:
-                throw new IllegalArgumentException("Invalid operator");
+                if (num2 != 0) return num1 / num2;
+                else throw new ArithmeticException("Cannot divide by zero");
+            default: throw new IllegalArgumentException("Invalid operator");
         }
     }
 }
